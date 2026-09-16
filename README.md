@@ -14,6 +14,7 @@ Pure AI slop, sorry.
 1. i'm losing lives while i'm on the start screen, the goats are killing the player
 1. add a tool to the tool-belt to activate AC-130 mode
 1. add predator missiles mode to 7 on the tool belt
+1. add suport for "slow-mo" mode by holding space when  or after firing the predator missile
 
 Done:
 

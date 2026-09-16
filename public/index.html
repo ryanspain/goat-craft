@@ -339,6 +339,40 @@
     border-color: #ffff33;
     color: #ffff33;
   }
+  #predator-slowmo-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(ellipse at center, rgba(40, 80, 160, 0) 35%, rgba(8, 22, 64, 0.55) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    z-index: 88;
+  }
+  #predator-slowmo-tag {
+    position: absolute;
+    bottom: 62px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 13px;
+    font-weight: bold;
+    letter-spacing: 3px;
+    color: #9fd0ff;
+    text-shadow: 0 0 10px #4488ff;
+    background: rgba(0, 10, 30, 0.8);
+    border: 1px solid rgba(120, 180, 255, 0.7);
+    padding: 5px 16px;
+    border-radius: 4px;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    pointer-events: none;
+    z-index: 90;
+  }
+  #predator-slowmo-tag.visible {
+    opacity: 1;
+  }
 </style>
 <!-- Load Three.js from unpkg/cdnjs -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -352,7 +386,7 @@
   <p><b>Left Click</b>: Break Block | <b>Right Click</b>: Place Block</p>
   <p><b>1-5 / Scroll</b>: Select Block | <b>6</b>: 🛩️ <b>AC-130 Gunner</b> | <b>7</b>: 🚀 <b>Predator Missile</b></p>
   <p style="color: #55ff55; margin-top: 4px;">🎯 <b>AC-130 Gunner</b>: Rain explosive 105mm/40mm/25mm shells that shatter blocks & injure goats!</p>
-  <p style="color: #ff5555; margin-top: 4px;">🚀 <b>Predator Missile</b>: Steer a high-speed guided missile from orbit & boost into targets!</p>
+  <p style="color: #ff5555; margin-top: 4px;">🚀 <b>Predator Missile</b>: Steer a high-speed guided missile from orbit & boost into targets! Hold <b>SPACE</b> in flight for slow-mo.</p>
   <p style="color: #ffaa55; margin-top: 4px;">🐐 <b>Beware: Roaming NPC Goats Spit Fire!</b></p>
   <button class="btn-start">CLICK TO START</button>
 </div>
@@ -458,6 +492,8 @@
 <!-- Predator Fullscreen Guided HUD -->
 <div id="predator-hud">
   <div id="predator-overlay"></div>
+  <div id="predator-slowmo-overlay"></div>
+  <div id="predator-slowmo-tag">SLOW-MO // TIME 0.25X</div>
 
   <!-- Top Telemetry Header -->
   <div id="predator-top-bar" style="position:absolute;top:18px;left:24px;right:24px;display:flex;justify-content:space-between;align-items:flex-start;font-size:13px;pointer-events:none;z-index:90;">
@@ -532,7 +568,7 @@
 
   <!-- Bottom Instructions Banner -->
   <div style="position:absolute;bottom:24px;left:50%;transform:translateX(-50%);text-align:center;font-size:11px;background:rgba(0,0,0,0.8);padding:6px 18px;border-radius:6px;border:1px solid rgba(255,50,40,0.5);pointer-events:none;z-index:90;letter-spacing:0.5px;">
-    <span>[MOUSE]: AIM LASER / STEER MISSILE | [L-CLICK]: FIRE MISSILE (HOLD: RAPID SALVO) | [F]: AUTO-FIRE (OFF) | [R]: ZOOM | [T]: FLIR | [ESC / 7]: EXIT</span>
+    <span>[MOUSE]: AIM LASER / STEER MISSILE | [L-CLICK]: FIRE MISSILE (HOLD: RAPID SALVO) | [SPACE HOLD]: SLOW-MO | [F]: AUTO-FIRE (OFF) | [R]: ZOOM | [T]: FLIR | [ESC / 7]: EXIT</span>
   </div>
 </div>
 
@@ -1172,6 +1208,7 @@ window.addEventListener('keydown', (e) => {
     if (e.code === 'KeyT') toggleFLIRPalette();
   }
   if (predatorActive) {
+    if (e.code === 'Space') e.preventDefault(); // Slow-mo hold, no page scroll
     if (e.code === 'KeyF') togglePredatorAutoFire();
     if (e.code === 'KeyR') togglePredatorZoom(1);
     if (e.code === 'KeyT') togglePredatorPalette();
@@ -2216,6 +2253,9 @@ let predatorSteerY = 0;
 let predatorImpactCamPos = null;  // Camera anchor while lingering on an impact
 let predatorImpactPoint = null;
 let predatorImpactHold = 0;
+let predatorSlowMoEngaged = false; // Bullet-time currently active (Space held during flight)
+let predatorTimeScale = 1;         // Smoothed time scale applied while in predator mode
+const PREDATOR_SLOWMO_SCALE = 0.25;
 const predatorActiveMissiles = [];
 const MISSILE_SPEED = 64;        // ≈30% slower rocket dive (was 92)
 const MISSILE_TURN_RATE = 2.4;   // Manual steering authority, rad/s
@@ -2316,6 +2356,40 @@ function playPredatorRadio() {
   } catch (e) {}
 }
 
+function playPredatorSlowMoSound(engage) {
+  if (!audioCtx) return;
+  try {
+    const now = audioCtx.currentTime;
+    const dur = 0.45;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    if (engage) {
+      osc.frequency.setValueAtTime(880, now);
+      osc.frequency.exponentialRampToValueAtTime(150, now + dur);
+    } else {
+      osc.frequency.setValueAtTime(150, now);
+      osc.frequency.exponentialRampToValueAtTime(880, now + dur);
+    }
+    gain.gain.setValueAtTime(0.16, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(now);
+    osc.stop(now + dur);
+  } catch (e) {}
+}
+
+function setPredatorSlowMo(on) {
+  if (predatorSlowMoEngaged === on) return;
+  predatorSlowMoEngaged = on;
+  const overlay = document.getElementById('predator-slowmo-overlay');
+  const tag = document.getElementById('predator-slowmo-tag');
+  if (overlay) overlay.style.opacity = on ? '1' : '0';
+  if (tag) tag.classList.toggle('visible', on);
+  playPredatorSlowMoSound(on);
+}
+
 function showPredatorKillNotification(text) {
   const el = document.getElementById('predator-kill-banner');
   if (!el) return;
@@ -2380,6 +2454,8 @@ function exitPredatorMode(aborted = false) {
   predatorImpactHold = 0;
   predatorSteerX = 0;
   predatorSteerY = 0;
+  setPredatorSlowMo(false);
+  predatorTimeScale = 1;
 
   // Clean up any remaining in-flight missiles
   for (let i = 0; i < predatorActiveMissiles.length; i++) {
@@ -3295,8 +3371,20 @@ function animate() {
   requestAnimationFrame(animate);
 
   const now = performance.now();
-  const dt = Math.min((now - lastTime) / 1000, 0.1);
+  const rawDt = Math.min((now - lastTime) / 1000, 0.1);
   lastTime = now;
+
+  // Predator slow-mo: hold SPACE while a missile is in flight (or on impact) for bullet-time
+  const slowMoWanted = predatorActive && keys['Space'] &&
+    (predatorCameraMissile || predatorActiveMissiles.length > 0 || predatorImpactHold > 0);
+  setPredatorSlowMo(slowMoWanted);
+  if (predatorActive) {
+    const targetScale = slowMoWanted ? PREDATOR_SLOWMO_SCALE : 1;
+    predatorTimeScale += (targetScale - predatorTimeScale) * Math.min(1, rawDt * 9);
+  } else {
+    predatorTimeScale = 1;
+  }
+  const dt = rawDt * predatorTimeScale;
 
   if (isLocked) {
     if (playerInvulnTimer > 0) {
