@@ -135,6 +135,25 @@
     100% { transform: scale(1.18); box-shadow: 0 0 22px #55ff55, inset 0 0 12px rgba(0, 255, 100, 0.6); }
   }
 
+  /* Predator Missile Toolbelt Slot */
+  .slot-predator {
+    border-color: #6b2222;
+    background: rgba(45, 12, 12, 0.7);
+  }
+  .slot-predator:hover {
+    border-color: #ff4444;
+    transform: scale(1.05);
+  }
+  .slot-predator.active {
+    border-color: #ff2222 !important;
+    box-shadow: 0 0 14px #ff2222, inset 0 0 8px rgba(255, 40, 40, 0.4) !important;
+    animation: predator-pulse 1.2s infinite alternate;
+  }
+  @keyframes predator-pulse {
+    0% { transform: scale(1.12); box-shadow: 0 0 10px #ff2222; }
+    100% { transform: scale(1.18); box-shadow: 0 0 22px #ff4422, inset 0 0 12px rgba(255, 50, 30, 0.6); }
+  }
+
   /* AC-130 Fullscreen Gunner HUD */
   #ac130-hud {
     position: absolute;
@@ -226,6 +245,100 @@
     border-color: currentColor !important;
     box-shadow: 0 0 8px currentColor;
   }
+
+  /* Predator High-Altitude Drone HUD */
+  #predator-hud {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    pointer-events: none;
+    z-index: 86;
+    font-family: 'Consolas', 'Courier New', monospace;
+    color: #ff3b30;
+    text-shadow: 0 0 5px rgba(255, 50, 40, 0.8);
+    overflow: hidden;
+  }
+  #predator-hud.flir-bw {
+    color: #ffffff !important;
+    text-shadow: 0 0 5px #ffffff !important;
+  }
+  #predator-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background:
+      radial-gradient(ellipse at center, rgba(40, 0, 0, 0.12) 0%, rgba(25, 0, 0, 0.82) 100%),
+      repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.25) 0px, rgba(0, 0, 0, 0.25) 1px, transparent 2px, transparent 4px);
+    pointer-events: none;
+  }
+  #predator-hud.flir-bw #predator-overlay {
+    background:
+      radial-gradient(ellipse at center, rgba(20, 20, 20, 0.12) 0%, rgba(0, 0, 0, 0.88) 100%),
+      repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.25) 0px, rgba(0, 0, 0, 0.25) 1px, transparent 2px, transparent 4px);
+  }
+  #predator-crosshair {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 280px;
+    height: 280px;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+  #predator-targets {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+  .predator-target-box {
+    position: absolute;
+    width: 48px;
+    height: 48px;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    transition: left 0.05s linear, top 0.05s linear;
+  }
+  .predator-target-box .bracket {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-color: currentColor;
+    border-style: solid;
+  }
+  .predator-target-box .bracket.top-left { top: 0; left: 0; border-width: 2px 0 0 2px; }
+  .predator-target-box .bracket.top-right { top: 0; right: 0; border-width: 2px 2px 0 0; }
+  .predator-target-box .bracket.bottom-left { bottom: 0; left: 0; border-width: 0 0 2px 2px; }
+  .predator-target-box .bracket.bottom-right { bottom: 0; right: 0; border-width: 0 2px 2px 0; }
+  .predator-target-box .tgt-info {
+    position: absolute;
+    bottom: -18px;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    font-size: 9px;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    background: rgba(0, 0, 0, 0.82);
+    padding: 1px 5px;
+    border-radius: 2px;
+    border: 1px solid rgba(255, 50, 40, 0.6);
+  }
+  .predator-target-box.locked {
+    color: #ffff33;
+    filter: drop-shadow(0 0 6px #ffff00);
+  }
+  .predator-target-box.locked .tgt-info {
+    border-color: #ffff33;
+    color: #ffff33;
+  }
 </style>
 <!-- Load Three.js from unpkg/cdnjs -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -237,8 +350,9 @@
   <p>Click anywhere to Play</p>
   <p><b>WASD</b> to Move | <b>SPACE</b> to Jump | <b>SHIFT</b> to Sneak</p>
   <p><b>Left Click</b>: Break Block | <b>Right Click</b>: Place Block</p>
-  <p><b>1-5 / Scroll</b>: Select Block | <b>6 or Toolbelt</b>: 🛩️ <b>AC-130 Gunner Mode</b></p>
+  <p><b>1-5 / Scroll</b>: Select Block | <b>6</b>: 🛩️ <b>AC-130 Gunner</b> | <b>7</b>: 🚀 <b>Predator Missile</b></p>
   <p style="color: #55ff55; margin-top: 4px;">🎯 <b>AC-130 Gunner</b>: Rain explosive 105mm/40mm/25mm shells that shatter blocks & injure goats!</p>
+  <p style="color: #ff5555; margin-top: 4px;">🚀 <b>Predator Missile</b>: Steer a high-speed guided missile from orbit & boost into targets!</p>
   <p style="color: #ffaa55; margin-top: 4px;">🐐 <b>Beware: Roaming NPC Goats Spit Fire!</b></p>
   <button class="btn-start">CLICK TO START</button>
 </div>
@@ -341,6 +455,87 @@
   </div>
 </div>
 
+<!-- Predator Fullscreen Guided HUD -->
+<div id="predator-hud">
+  <div id="predator-overlay"></div>
+
+  <!-- Top Telemetry Header -->
+  <div id="predator-top-bar" style="position:absolute;top:18px;left:24px;right:24px;display:flex;justify-content:space-between;align-items:flex-start;font-size:13px;pointer-events:none;z-index:90;">
+    <div>
+      <div style="font-size:18px;font-weight:bold;letter-spacing:2px;color:currentColor;">MQ-9 REAPER // PREDATOR STRIKE</div>
+      <div style="opacity:0.75;margin-top:2px;font-size:11px;">SYS: HIGH-ALTITUDE STRATOSPHERE ORBIT (11,500 FT) // HELLFIRE SALVO</div>
+    </div>
+    <div style="text-align:right;">
+      <div id="predator-alt" style="font-weight:bold; font-size:15px; color:#ff4444;">ALT: 11,500 FT</div>
+      <div id="predator-status" style="font-weight:bold; color:#ff8888; margin-top:2px;">AUTO-FIRE: OFF</div>
+      <div id="predator-rng" style="opacity:0.85; font-size:11px;">RNG: 120 FT</div>
+    </div>
+  </div>
+
+  <!-- Kill Banner -->
+  <div id="predator-kill-banner" style="position:absolute;top:75px;left:50%;transform:translate(-50%,0);font-size:18px;font-weight:bold;letter-spacing:2px;color:#ff3333;text-shadow:0 0 12px #ff1111;background:rgba(0,0,0,0.85);padding:6px 22px;border:2px solid #ff3333;border-radius:4px;opacity:0;transition:all 0.2s;pointer-events:none;z-index:95;"></div>
+
+  <!-- Center Crosshair Reticle -->
+  <div id="predator-crosshair">
+    <svg width="280" height="280" viewBox="0 0 280 280" style="width:100%;height:100%;">
+      <!-- Outer dashed ring -->
+      <circle cx="140" cy="140" r="115" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="10 8" opacity="0.5"/>
+      <!-- Inner diamond -->
+      <polygon points="140,75 205,140 140,205 75,140" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.6"/>
+      <!-- Crosshair lines -->
+      <line x1="140" y1="90" x2="140" y2="120" stroke="currentColor" stroke-width="2"/>
+      <line x1="140" y1="160" x2="140" y2="190" stroke="currentColor" stroke-width="2"/>
+      <line x1="90" y1="140" x2="120" y2="140" stroke="currentColor" stroke-width="2"/>
+      <line x1="160" y1="140" x2="190" y2="140" stroke="currentColor" stroke-width="2"/>
+      <!-- Center pipper dot -->
+      <circle cx="140" cy="140" r="2.5" fill="currentColor"/>
+      <!-- Corner brackets -->
+      <path d="M 55 85 L 55 55 L 85 55" fill="none" stroke="currentColor" stroke-width="2.5"/>
+      <path d="M 225 85 L 225 55 L 195 55" fill="none" stroke="currentColor" stroke-width="2.5"/>
+      <path d="M 55 195 L 55 225 L 85 225" fill="none" stroke="currentColor" stroke-width="2.5"/>
+      <path d="M 225 195 L 225 225 L 195 225" fill="none" stroke="currentColor" stroke-width="2.5"/>
+    </svg>
+    <div id="predator-crosshair-label" style="position:absolute;bottom:12px;left:50%;transform:translateX(-50%);font-size:11px;letter-spacing:1px;white-space:nowrap;font-weight:bold;opacity:0.95;background:rgba(0,0,0,0.7);padding:2px 8px;border-radius:3px;border:1px solid currentColor;">AGM-114 HELLFIRE // LASER TRACK</div>
+  </div>
+
+  <!-- Dynamic Live Goat Target Tracking Brackets Container -->
+  <div id="predator-targets" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;"></div>
+
+  <!-- Left Side Weapon / Ordnance Panel -->
+  <div id="predator-weapons-panel" style="position:absolute;bottom:85px;left:24px;background:rgba(28,5,5,0.85);border:1px solid currentColor;padding:12px 14px;border-radius:6px;width:240px;pointer-events:auto;z-index:90;">
+    <div style="font-size:12px;font-weight:bold;margin-bottom:8px;letter-spacing:1px;border-bottom:1px solid rgba(255,255,255,0.2);padding-bottom:4px;">ORDNANCE [AGM-114]</div>
+    <div style="padding:6px 8px;margin-bottom:8px;border:1px solid currentColor;border-radius:4px;font-size:12px;display:flex;justify-content:space-between;background:rgba(255,50,40,0.2);">
+      <span>HELLFIRE MISSILE</span><span style="font-weight:bold;color:#ff8888;">MANUAL</span>
+    </div>
+    <button id="predator-autofire-btn" style="background:#551515;border:1px solid currentColor;color:#ff8888;padding:6px 10px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:11px;font-weight:bold;margin-bottom:8px;width:100%;letter-spacing:0.5px;">AUTO-FIRE: OFF [F]</button>
+    <!-- Salvo reload progress bar -->
+    <div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:3px;">
+        <span>SALVO COOLDOWN</span>
+        <span id="predator-reload-text">FIRING</span>
+      </div>
+      <div style="width:100%;height:6px;background:rgba(0,0,0,0.6);border:1px solid currentColor;border-radius:2px;overflow:hidden;">
+        <div id="predator-reload-bar" style="width:100%;height:100%;background:currentColor;transition:width 0.05s linear;"></div>
+      </div>
+    </div>
+    <div style="font-size:10px;opacity:0.8;margin-top:6px;">STRIKES LAUNCHED: <b id="predator-fired-count" style="color:#fff;">0</b></div>
+  </div>
+
+  <!-- Right Side Camera / Sensor Controls -->
+  <div id="predator-sensor-panel" style="position:absolute;bottom:85px;right:24px;background:rgba(28,5,5,0.85);border:1px solid currentColor;padding:12px 14px;border-radius:6px;width:220px;pointer-events:auto;text-align:right;z-index:90;">
+    <div style="font-size:12px;font-weight:bold;margin-bottom:8px;letter-spacing:1px;border-bottom:1px solid rgba(255,255,255,0.2);padding-bottom:4px;text-align:left;">SENSORS & OPTICS</div>
+    <div style="font-size:12px;margin-bottom:6px;">ZOOM: <b id="predator-zoom-label" style="color:#fff;">1.0X</b> <span style="font-size:10px;opacity:0.75;">[R / R-CLICK]</span></div>
+    <button id="predator-zoom-btn" style="background:#2a0a0a;border:1px solid currentColor;color:currentColor;padding:5px 10px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:11px;margin-bottom:6px;width:100%;">CYCLE ZOOM (1x / 2.5x / 5x / 8x)</button>
+    <button id="predator-flir-btn" style="background:#2a0a0a;border:1px solid currentColor;color:currentColor;padding:5px 10px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:11px;margin-bottom:6px;width:100%;">FLIR MODE: WHITE-HOT [T]</button>
+    <button id="predator-exit-btn" style="background:#4a1212;border:1px solid #ff4444;color:#ff8888;padding:7px 10px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px;font-weight:bold;width:100%;margin-top:2px;">❌ EXIT PREDATOR (ESC / 7)</button>
+  </div>
+
+  <!-- Bottom Instructions Banner -->
+  <div style="position:absolute;bottom:24px;left:50%;transform:translateX(-50%);text-align:center;font-size:11px;background:rgba(0,0,0,0.8);padding:6px 18px;border-radius:6px;border:1px solid rgba(255,50,40,0.5);pointer-events:none;z-index:90;letter-spacing:0.5px;">
+    <span>[MOUSE]: AIM LASER / STEER MISSILE | [L-CLICK]: FIRE MISSILE (HOLD: RAPID SALVO) | [F]: AUTO-FIRE (OFF) | [R]: ZOOM | [T]: FLIR | [ESC / 7]: EXIT</span>
+  </div>
+</div>
+
 <div id="damage-flash" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;background:rgba(255,0,0,0);transition:background 0.15s;z-index:90;"></div>
 
 <div id="ui-overlay">
@@ -381,6 +576,11 @@
     <span class="slot-key">6</span>
     <div class="slot-preview" style="background:#0d2912;border:1px solid #00ff66;display:flex;align-items:center;justify-content:center;font-size:14px;">🛩️</div>
     <span style="color:#55ff55;font-size:10px;">AC-130</span>
+  </div>
+  <div class="slot slot-predator" data-id="7" id="slot-predator" title="Predator Missile Mode [Press 7]">
+    <span class="slot-key">7</span>
+    <div class="slot-preview" style="background:#290d0d;border:1px solid #ff4444;display:flex;align-items:center;justify-content:center;font-size:14px;">🚀</div>
+    <span style="color:#ff5555;font-size:10px;">Predator</span>
   </div>
 </div>
 
@@ -592,7 +792,7 @@ function initAudio() {
 }
 
 function playGoatBleat() {
-  if (!audioCtx || ac130Active) return;
+  if (!audioCtx || ac130Active || predatorActive) return;
   try {
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
@@ -626,7 +826,7 @@ function playGoatBleat() {
 }
 
 function playFireSpitSound() {
-  if (!audioCtx || ac130Active) return;
+  if (!audioCtx || ac130Active || predatorActive) return;
   try {
     const now = audioCtx.currentTime;
     const bufferSize = audioCtx.sampleRate * 0.45;
@@ -788,7 +988,7 @@ function playAC130ExplosionSound(size) {
 }
 
 function playGoatHurtBleat() {
-  if (!audioCtx || ac130Active) return;
+  if (!audioCtx || ac130Active || predatorActive) return;
   try {
     const now = audioCtx.currentTime;
     const osc = audioCtx.createOscillator();
@@ -896,7 +1096,7 @@ function updateHealthUI() {
 }
 
 function hurtPlayer(amount, knockDir) {
-  if (!isLocked || playerInvulnTimer > 0 || ac130Active) return;
+  if (!isLocked || playerInvulnTimer > 0 || ac130Active || predatorActive) return;
   playerHealth -= amount;
   playerInvulnTimer = 0.8;
   playPlayerHurtSound();
@@ -942,11 +1142,14 @@ let activeSlot = 1;
 
 function handleSlotSelect(slot) {
   if (slot === 6) {
+    if (predatorActive) exitPredatorMode(true);
     toggleAC130Mode();
+  } else if (slot === 7) {
+    if (ac130Active) exitAC130Mode();
+    togglePredatorMode();
   } else {
-    if (ac130Active) {
-      exitAC130Mode();
-    }
+    if (ac130Active) exitAC130Mode();
+    if (predatorActive) exitPredatorMode(true);
     activeSlot = slot;
     updateHotbar();
   }
@@ -954,7 +1157,7 @@ function handleSlotSelect(slot) {
 
 window.addEventListener('keydown', (e) => {
   keys[e.code] = true;
-  if (['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6'].includes(e.code)) {
+  if (['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6', 'Digit7'].includes(e.code)) {
     const slot = parseInt(e.code.replace('Digit', ''));
     if (ac130Active && slot >= 1 && slot <= 3) {
       selectAC130Weapon(slot - 1);
@@ -968,6 +1171,11 @@ window.addEventListener('keydown', (e) => {
     if (e.code === 'KeyR') toggleAC130Zoom();
     if (e.code === 'KeyT') toggleFLIRPalette();
   }
+  if (predatorActive) {
+    if (e.code === 'KeyF') togglePredatorAutoFire();
+    if (e.code === 'KeyR') togglePredatorZoom(1);
+    if (e.code === 'KeyT') togglePredatorPalette();
+  }
 });
 
 window.addEventListener('keyup', (e) => {
@@ -979,7 +1187,10 @@ const slots = document.querySelectorAll('.slot');
 function updateHotbar() {
   slots.forEach(s => {
     const id = parseInt(s.dataset.id);
-    if (ac130Active) {
+    if (predatorActive) {
+      if (id === 7) s.classList.add('active');
+      else s.classList.remove('active');
+    } else if (ac130Active) {
       if (id === 6) s.classList.add('active');
       else s.classList.remove('active');
     } else {
@@ -996,13 +1207,18 @@ slots.forEach(s => {
   });
 });
 window.addEventListener('wheel', (e) => {
+  if (predatorActive) {
+    if (e.deltaY > 0) togglePredatorZoom(1);
+    else togglePredatorZoom(-1);
+    return;
+  }
   if (ac130Active) {
     if (e.deltaY > 0) toggleAC130Zoom(1);
     else toggleAC130Zoom(-1);
     return;
   }
-  if (e.deltaY > 0) activeSlot = (activeSlot % 6) + 1;
-  else activeSlot = ((activeSlot - 2 + 6) % 6) + 1;
+  if (e.deltaY > 0) activeSlot = (activeSlot % 7) + 1;
+  else activeSlot = ((activeSlot - 2 + 7) % 7) + 1;
   handleSlotSelect(activeSlot);
 });
 
@@ -1091,10 +1307,12 @@ if (startBtn) {
   });
 });
 
-// Escape key to exit AC-130 mode or pause
+// Escape key to exit AC-130 mode, Predator mode, or pause
 window.addEventListener('keydown', (e) => {
   if (e.code === 'Escape') {
-    if (ac130Active) {
+    if (predatorActive) {
+      exitPredatorMode(true);
+    } else if (ac130Active) {
       exitAC130Mode();
     } else if (isLocked) {
       unlockGame();
@@ -1134,6 +1352,20 @@ document.addEventListener('mousemove', (e) => {
   // Prevent large jumps on lock entry
   if (Math.abs(mx) > 120) mx = 0;
   if (Math.abs(my) > 120) my = 0;
+
+  if (predatorActive) {
+    const zoomFactor = camera.fov / 72;
+    if (predatorCameraMissile) {
+      // Onboard camera: mouse steers the guided missile
+      predatorSteerX -= mx * 0.0022 * zoomFactor;
+      predatorSteerY -= my * 0.0022 * zoomFactor;
+    } else {
+      predatorYaw -= mx * 0.0022 * zoomFactor;
+      predatorPitch -= my * 0.0022 * zoomFactor;
+      predatorPitch = Math.max(-Math.PI * 0.49, Math.min(-0.18, predatorPitch));
+    }
+    return;
+  }
 
   if (ac130Active) {
     const zoomFactor = camera.fov / 72;
@@ -1205,6 +1437,16 @@ function updateRaycast() {
 window.addEventListener('mousedown', (e) => {
   if (!isLocked) return;
 
+  if (predatorActive) {
+    if (e.button === 0) {
+      predatorRapidFiring = true;
+      if (predatorFireCooldown > 0.08) predatorFireCooldown = 0.04;
+    } else if (e.button === 2) {
+      togglePredatorZoom(1);
+    }
+    return;
+  }
+
   if (ac130Active) {
     if (e.button === 0) {
       ac130Firing = true;
@@ -1239,6 +1481,9 @@ window.addEventListener('mousedown', (e) => {
 });
 window.addEventListener('mouseup', (e) => {
   if (e.button === 0) {
+    if (predatorActive) {
+      predatorRapidFiring = false;
+    }
     ac130Firing = false;
   }
 });
@@ -1438,6 +1683,7 @@ function showAC130KillNotification(text) {
 
 function enterAC130Mode() {
   initAudio();
+  if (predatorActive) exitPredatorMode(true);
   ac130Active = true;
   document.getElementById('crosshair').style.display = 'none';
   document.getElementById('ac130-hud').style.display = 'block';
@@ -1703,7 +1949,7 @@ function hurtGoat(goat, dmg, knock) {
   if (!goat || goat.dead) return;
   goat.hp -= dmg;
   goat.hurtTimer = 0.45;
-  if (!ac130Active) {
+  if (!ac130Active && !predatorActive) {
     playGoatHurtBleat();
   }
 
@@ -1751,7 +1997,10 @@ function killGoat(goat) {
   const countEl = document.getElementById('goat-count');
   if (countEl) countEl.innerText = goats.length;
 
-  if (ac130Active) {
+  if (predatorActive) {
+    playKillConfirmTone();
+    showPredatorKillNotification("TGT ELIMINATED: GOAT VAPORIZED");
+  } else if (ac130Active) {
     playKillConfirmTone();
     showAC130KillNotification("TGT ELIMINATED: GOAT NEUTRALIZED");
   } else {
@@ -1941,6 +2190,621 @@ setTimeout(() => {
   if (flirBtn) flirBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleFLIRPalette(); });
   const exitBtn = document.getElementById('ac130-exit-btn');
   if (exitBtn) exitBtn.addEventListener('click', (e) => { e.stopPropagation(); exitAC130Mode(); });
+}, 100);
+
+// --- PREDATOR HIGH-ALTITUDE AUTO-FIRING STRIKE SYSTEM ---
+let predatorActive = false;
+let predatorAutoFire = false; // Manual fire only (toggle with F)
+let predatorRapidFiring = false;
+let predatorFireCooldown = 0; // Ready to fire immediately, manually
+let predatorFiredCount = 0;
+let predatorYaw = 0;
+let predatorPitch = -1.15; // Angled downwards towards island center
+let predatorOrbitAngle = 0;
+const predatorOrbitRadius = 24;
+const predatorOrbitHeight = 115; // High above even the AC-130 (which orbits at 38)!
+const predatorZoomLevels = [72, 34, 16, 8];
+const predatorZoomLabels = ['1.0X', '2.5X', '5.0X', '8.0X'];
+let predatorCurrentZoomIdx = 0;
+let predatorPalette = 'thermal';
+let predatorTargetPoint = new THREE.Vector3(0, 6, 0);
+let predatorLockedGoat = null;
+let predatorKillBannerTimeout = null;
+let predatorCameraMissile = null; // Missile whose onboard POV the camera is riding
+let predatorSteerX = 0; // Accumulated mouse steering while riding (radians)
+let predatorSteerY = 0;
+let predatorImpactCamPos = null;  // Camera anchor while lingering on an impact
+let predatorImpactPoint = null;
+let predatorImpactHold = 0;
+const predatorActiveMissiles = [];
+const MISSILE_SPEED = 64;        // ≈30% slower rocket dive (was 92)
+const MISSILE_TURN_RATE = 2.4;   // Manual steering authority, rad/s
+const MISSILE_HOME_RATE = 2.2;   // Laser-lock homing assist, rad/s
+const MISSILE_FORWARD = new THREE.Vector3(0, 0, -1);
+
+function createPredatorMissileModel() {
+  const group = new THREE.Group();
+
+  // Cylindrical Body
+  const bodyGeo = new THREE.CylinderGeometry(0.2, 0.2, 2.0, 10);
+  const bodyMat = new THREE.MeshLambertMaterial({ color: 0x333833 });
+  const body = new THREE.Mesh(bodyGeo, bodyMat);
+  body.rotation.x = Math.PI / 2;
+  group.add(body);
+
+  // Yellow/Red Warhead Tip
+  const noseGeo = new THREE.ConeGeometry(0.2, 0.6, 10);
+  const noseMat = new THREE.MeshLambertMaterial({ color: 0xff3322 });
+  const nose = new THREE.Mesh(noseGeo, noseMat);
+  nose.position.z = -1.3;
+  nose.rotation.x = -Math.PI / 2;
+  group.add(nose);
+
+  // Stabilizer Fins
+  const finGeo = new THREE.BoxGeometry(0.04, 0.75, 0.4);
+  const finMat = new THREE.MeshLambertMaterial({ color: 0x222622 });
+  const fin1 = new THREE.Mesh(finGeo, finMat);
+  fin1.position.z = 0.7;
+  group.add(fin1);
+
+  const fin2 = new THREE.Mesh(finGeo, finMat);
+  fin2.position.z = 0.7;
+  fin2.rotation.z = Math.PI / 2;
+  group.add(fin2);
+
+  // Glowing rocket thruster nozzle
+  const glowGeo = new THREE.SphereGeometry(0.16, 6, 6);
+  const glowMat = new THREE.MeshBasicMaterial({ color: 0xffaa00 });
+  const glow = new THREE.Mesh(glowGeo, glowMat);
+  glow.position.z = 1.05;
+  group.add(glow);
+
+  return group;
+}
+
+function playPredatorLaunchSound() {
+  if (!audioCtx) return;
+  try {
+    const now = audioCtx.currentTime;
+
+    // Tactical chirp
+    const bOsc = audioCtx.createOscillator();
+    const bGain = audioCtx.createGain();
+    bOsc.type = 'sine';
+    bOsc.frequency.setValueAtTime(1400, now);
+    bOsc.frequency.exponentialRampToValueAtTime(2000, now + 0.04);
+    bGain.gain.setValueAtTime(0.2, now);
+    bGain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+    bOsc.connect(bGain);
+    bGain.connect(audioCtx.destination);
+    bOsc.start(now);
+    bOsc.stop(now + 0.05);
+
+    // Rocket thruster ignite & launch whoosh
+    const dur = 0.42;
+    const bufSize = Math.floor(audioCtx.sampleRate * dur);
+    const buffer = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufSize; i++) {
+      data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (audioCtx.sampleRate * 0.12));
+    }
+    const noise = audioCtx.createBufferSource();
+    noise.buffer = buffer;
+
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(600, now);
+    filter.frequency.exponentialRampToValueAtTime(1500, now + 0.2);
+
+    const gain = audioCtx.createGain();
+    gain.gain.setValueAtTime(0.35, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + dur);
+
+    noise.connect(filter);
+    filter.connect(gain);
+    gain.connect(audioCtx.destination);
+    noise.start(now);
+  } catch (e) {}
+}
+
+function playPredatorRadio() {
+  if (!audioCtx) return;
+  try {
+    const now = audioCtx.currentTime;
+    playBeep(1200, 0.04);
+    setTimeout(() => playBeep(1650, 0.05), 55);
+  } catch (e) {}
+}
+
+function showPredatorKillNotification(text) {
+  const el = document.getElementById('predator-kill-banner');
+  if (!el) return;
+  el.innerText = text;
+  el.style.opacity = '1';
+  el.style.transform = 'translate(-50%, 0) scale(1.08)';
+  if (predatorKillBannerTimeout) clearTimeout(predatorKillBannerTimeout);
+  predatorKillBannerTimeout = setTimeout(() => {
+    el.style.opacity = '0';
+    el.style.transform = 'translate(-50%, -10px) scale(0.96)';
+  }, 2200);
+}
+
+function enterPredatorMode() {
+  initAudio();
+  if (ac130Active) exitAC130Mode();
+
+  predatorActive = true;
+  predatorRapidFiring = false;
+  predatorFireCooldown = 0; // Manual fire: ready immediately, no auto-fire
+  predatorSteerX = 0;
+  predatorSteerY = 0;
+
+  // Re-request pointer lock if not locked
+  if (!isLocked) {
+    lockGame();
+  }
+
+  document.getElementById('crosshair').style.display = 'none';
+  document.getElementById('predator-hud').style.display = 'block';
+
+  applyPredatorPalette();
+  playPredatorRadio();
+  updateHotbar();
+
+  // Position camera high above the island (altitude 115, well above AC-130 at 38)!
+  const camX = Math.cos(predatorOrbitAngle) * predatorOrbitRadius;
+  const camZ = Math.sin(predatorOrbitAngle) * predatorOrbitRadius;
+  camera.position.set(camX, predatorOrbitHeight, camZ);
+
+  // Aim towards island center
+  const target = new THREE.Vector3(0, 6, 0);
+  const dir = target.clone().sub(camera.position).normalize();
+  predatorYaw = Math.atan2(-dir.x, -dir.z);
+  predatorPitch = Math.asin(dir.y);
+  camera.rotation.order = 'YXZ';
+  camera.rotation.y = predatorYaw;
+  camera.rotation.x = predatorPitch;
+
+  camera.fov = predatorZoomLevels[predatorCurrentZoomIdx];
+  camera.updateProjectionMatrix();
+
+  showPredatorKillNotification("PREDATOR IN HIGH ORBIT (11,500 FT) // AUTO-FIRE OFF — L-CLICK TO FIRE");
+}
+
+function exitPredatorMode(aborted = false) {
+  predatorActive = false;
+  predatorRapidFiring = false;
+  predatorCameraMissile = null;
+  predatorImpactCamPos = null;
+  predatorImpactPoint = null;
+  predatorImpactHold = 0;
+  predatorSteerX = 0;
+  predatorSteerY = 0;
+
+  // Clean up any remaining in-flight missiles
+  for (let i = 0; i < predatorActiveMissiles.length; i++) {
+    scene.remove(predatorActiveMissiles[i].mesh);
+  }
+  predatorActiveMissiles.length = 0;
+
+  document.getElementById('crosshair').style.display = 'block';
+  document.getElementById('predator-hud').style.display = 'none';
+  renderer.domElement.style.filter = 'none';
+  camera.fov = 75;
+  camera.updateProjectionMatrix();
+
+  if (activeSlot === 7) activeSlot = 1;
+  updateHotbar();
+  playerInvulnTimer = 2.0; // Grace period on returning to ground
+}
+
+function togglePredatorMode() {
+  if (predatorActive) {
+    exitPredatorMode(true);
+  } else {
+    enterPredatorMode();
+  }
+}
+
+function firePredatorMissile() {
+  predatorFiredCount++;
+  const countEl = document.getElementById('predator-fired-count');
+  if (countEl) countEl.innerText = predatorFiredCount;
+
+  playPredatorLaunchSound();
+  cameraShake = Math.min(cameraShake + 0.16, 0.6);
+
+  // Launch from the drone's current orbit position/aim (even if the camera is riding another missile)
+  const droneEuler = new THREE.Euler(predatorPitch, predatorYaw, 0, 'YXZ');
+  const muzzleOffset = new THREE.Vector3((Math.random() - 0.5) * 3.5, -2.0, -1.0).applyEuler(droneEuler);
+  const origin = new THREE.Vector3(
+    Math.cos(predatorOrbitAngle) * predatorOrbitRadius,
+    predatorOrbitHeight,
+    Math.sin(predatorOrbitAngle) * predatorOrbitRadius
+  ).add(muzzleOffset);
+
+  // Target point: locked goat or laser target point
+  let target = (predatorLockedGoat && !predatorLockedGoat.dead)
+    ? predatorLockedGoat.pos.clone().add(new THREE.Vector3(0, 0.6, 0))
+    : (predatorTargetPoint ? predatorTargetPoint.clone() : new THREE.Vector3(0, 6, 0));
+
+  // Slight spread based on distance
+  target.x += (Math.random() - 0.5) * 0.7;
+  target.z += (Math.random() - 0.5) * 0.7;
+
+  const dir = target.clone().sub(origin).normalize();
+  const dist = origin.distanceTo(target);
+  const speed = MISSILE_SPEED;
+  const flightTime = Math.max(0.08, dist / speed);
+
+  // 3D missile model
+  const missileMesh = createPredatorMissileModel();
+  missileMesh.position.copy(origin);
+  missileMesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, -1), dir);
+  scene.add(missileMesh);
+
+  const missile = {
+    mesh: missileMesh,
+    origin: origin.clone(),
+    target: target.clone(),
+    dir: dir.clone(),
+    speed,
+    flightTime,
+    elapsed: 0,
+    homeGoat: (predatorLockedGoat && !predatorLockedGoat.dead) ? predatorLockedGoat : null, // Laser lock at launch
+    manualTimer: 0 // Recent manual steering suppresses homing
+  };
+  predatorActiveMissiles.push(missile);
+  predatorCameraMissile = missile; // Camera rides this missile until impact
+  predatorSteerX = 0;
+  predatorSteerY = 0;
+}
+
+// Rebuild a missile's flight direction from guided yaw/pitch (camera convention)
+function setPredatorMissileDir(m, yaw, pitch) {
+  const cp = Math.cos(pitch);
+  m.dir.set(-Math.sin(yaw) * cp, Math.sin(pitch), -Math.cos(yaw) * cp).normalize();
+  m.mesh.quaternion.setFromUnitVectors(MISSILE_FORWARD, m.dir);
+}
+
+function togglePredatorAutoFire() {
+  predatorAutoFire = !predatorAutoFire;
+  playBeep(predatorAutoFire ? 1250 : 650, 0.06);
+  const btn = document.getElementById('predator-autofire-btn');
+  const statusEl = document.getElementById('predator-status');
+  if (btn) {
+    btn.innerText = predatorAutoFire ? '⚡ AUTO-FIRE: ON [F]' : 'AUTO-FIRE: OFF [F]';
+    btn.style.color = predatorAutoFire ? '#ffff44' : '#ff8888';
+  }
+  if (statusEl) {
+    statusEl.innerText = predatorAutoFire ? 'AUTO-FIRE: ACTIVE' : 'AUTO-FIRE: OFF';
+    statusEl.style.color = predatorAutoFire ? '#ffff44' : '#ff8888';
+  }
+}
+
+function togglePredatorZoom(dir = 1) {
+  if (dir > 0) {
+    predatorCurrentZoomIdx = (predatorCurrentZoomIdx + 1) % predatorZoomLevels.length;
+  } else {
+    predatorCurrentZoomIdx = (predatorCurrentZoomIdx - 1 + predatorZoomLevels.length) % predatorZoomLevels.length;
+  }
+  camera.fov = predatorZoomLevels[predatorCurrentZoomIdx];
+  camera.updateProjectionMatrix();
+  playBeep(1100 + predatorCurrentZoomIdx * 250, 0.06);
+
+  const zl = document.getElementById('predator-zoom-label');
+  if (zl) zl.innerText = predatorZoomLabels[predatorCurrentZoomIdx];
+}
+
+function togglePredatorPalette() {
+  const hud = document.getElementById('predator-hud');
+  const btn = document.getElementById('predator-flir-btn');
+  playBeep(850, 0.06);
+
+  if (predatorPalette === 'thermal') {
+    predatorPalette = 'ir';
+    if (hud) hud.classList.remove('flir-bw');
+    if (btn) btn.innerText = 'FLIR MODE: IR GREEN [T]';
+    renderer.domElement.style.filter = 'contrast(1.4) brightness(1.1) saturate(0.25) sepia(0.8) hue-rotate(85deg)';
+  } else if (predatorPalette === 'ir') {
+    predatorPalette = 'color';
+    if (hud) hud.classList.remove('flir-bw');
+    if (btn) btn.innerText = 'FLIR MODE: OPTICAL COLOR [T]';
+    renderer.domElement.style.filter = 'contrast(1.25) brightness(1.05) saturate(1.1)';
+  } else {
+    predatorPalette = 'thermal';
+    if (hud) hud.classList.add('flir-bw');
+    if (btn) btn.innerText = 'FLIR MODE: WHITE-HOT [T]';
+    renderer.domElement.style.filter = 'contrast(1.65) brightness(0.92) grayscale(1)';
+  }
+}
+
+function applyPredatorPalette() {
+  const hud = document.getElementById('predator-hud');
+  if (predatorPalette === 'thermal') {
+    if (hud) hud.classList.add('flir-bw');
+    renderer.domElement.style.filter = 'contrast(1.65) brightness(0.92) grayscale(1)';
+  } else if (predatorPalette === 'ir') {
+    if (hud) hud.classList.remove('flir-bw');
+    renderer.domElement.style.filter = 'contrast(1.4) brightness(1.1) saturate(0.25) sepia(0.8) hue-rotate(85deg)';
+  } else {
+    if (hud) hud.classList.remove('flir-bw');
+    renderer.domElement.style.filter = 'contrast(1.25) brightness(1.05) saturate(1.1)';
+  }
+}
+
+function updatePredatorTarget() {
+  const dir = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+  raycaster.set(camera.position, dir);
+  raycaster.far = 400;
+
+  const targetMeshes = [];
+  world.forEach(v => targetMeshes.push(v.mesh));
+  goats.forEach(g => {
+    g.mesh.traverse(child => { if (child.isMesh) targetMeshes.push(child); });
+  });
+
+  const hits = raycaster.intersectObjects(targetMeshes, false);
+  if (hits.length > 0) {
+    predatorTargetPoint = hits[0].point.clone();
+  } else {
+    if (Math.abs(dir.y) > 0.001) {
+      const t = (1 - camera.position.y) / dir.y;
+      if (t > 0) {
+        predatorTargetPoint = camera.position.clone().addScaledVector(dir, t);
+      }
+    }
+  }
+}
+
+function updatePredatorDrone(dt) {
+  // Slow high-altitude surveillance orbit
+  predatorOrbitAngle += 0.04 * dt;
+
+  // Auto-firing and rapid-firing cooldown
+  if (predatorFireCooldown > 0) {
+    predatorFireCooldown -= dt;
+  }
+
+  const fireInterval = predatorRapidFiring ? 0.16 : 0.38;
+  if ((predatorAutoFire || predatorRapidFiring) && predatorFireCooldown <= 0) {
+    firePredatorMissile();
+    predatorFireCooldown = fireInterval;
+  }
+
+  // Discard stale steering input when not riding a missile
+  if (!predatorCameraMissile) {
+    predatorSteerX = 0;
+    predatorSteerY = 0;
+  }
+
+  // Update in-flight active missiles (guided: mouse-steered via onboard camera + laser-lock homing)
+  for (let i = predatorActiveMissiles.length - 1; i >= 0; i--) {
+    const m = predatorActiveMissiles[i];
+    m.elapsed += dt;
+    const riding = predatorCameraMissile === m;
+
+    if (riding) {
+      m.manualTimer = Math.max(0, m.manualTimer - dt);
+      if (predatorSteerX !== 0 || predatorSteerY !== 0) m.manualTimer = 0.35;
+
+      // Rate-limited manual steering from accumulated mouse deltas
+      const maxTurn = MISSILE_TURN_RATE * dt;
+      const yawDelta = Math.max(-maxTurn, Math.min(maxTurn, predatorSteerX));
+      const pitchDelta = Math.max(-maxTurn, Math.min(maxTurn, predatorSteerY));
+      predatorSteerX = 0;
+      predatorSteerY = 0;
+
+      let yaw = Math.atan2(-m.dir.x, -m.dir.z);
+      let pitch = Math.asin(THREE.MathUtils.clamp(m.dir.y, -1, 1));
+      pitch = THREE.MathUtils.clamp(pitch + pitchDelta, -Math.PI * 0.49, Math.PI * 0.25);
+      setPredatorMissileDir(m, yaw + yawDelta, pitch);
+    }
+
+    // Homing assist towards the laser-locked goat (paused shortly after manual steering)
+    if ((!riding || m.manualTimer <= 0) && m.homeGoat && !m.homeGoat.dead) {
+      const desired = m.homeGoat.pos.clone().add(new THREE.Vector3(0, 0.6, 0)).sub(m.mesh.position).normalize();
+      m.dir.lerp(desired, Math.min(1, MISSILE_HOME_RATE * dt)).normalize();
+      m.mesh.quaternion.setFromUnitVectors(MISSILE_FORWARD, m.dir);
+    }
+
+    // Move along the (steered) flight direction
+    m.mesh.position.addScaledVector(m.dir, m.speed * dt);
+
+    // Impact detection: swept voxel/sea check, goat proximity fuse, or fuel exhaustion
+    const step = m.speed * dt;
+    let impactPos = null;
+    for (let s = 0; s <= 3; s++) {
+      const probe = m.mesh.position.clone().addScaledVector(m.dir, -step * s / 3);
+      if (probe.y <= 1.0 || isSolid(probe.x, probe.y, probe.z)) {
+        impactPos = probe;
+        break;
+      }
+    }
+    if (!impactPos) {
+      for (const goat of goats) {
+        if (!goat.dead && m.mesh.position.distanceToSquared(goat.pos) < 2.6) {
+          impactPos = m.mesh.position.clone();
+          break;
+        }
+      }
+    }
+    if (!impactPos && m.elapsed >= m.flightTime) {
+      impactPos = m.mesh.position.clone(); // Out of fuel: air-burst where it stands
+    }
+
+    if (impactPos) {
+      createExplosion(impactPos, 6.5, 120, 160);
+      scene.remove(m.mesh);
+      predatorActiveMissiles.splice(i, 1);
+
+      if (riding) {
+        // Ride ends at impact: linger on the blast before cutting back to the drone
+        predatorCameraMissile = null;
+        predatorImpactCamPos = camera.position.clone();
+        predatorImpactPoint = impactPos;
+        predatorImpactHold = 0.9;
+      }
+    } else {
+      // Blazing rocket contrail
+      const contrailPos = m.mesh.position.clone().addScaledVector(m.dir, -0.8);
+      const contrailVel = m.dir.clone().multiplyScalar(-8).add(new THREE.Vector3(
+        (Math.random() - 0.5) * 2,
+        (Math.random() - 0.5) * 2,
+        (Math.random() - 0.5) * 2
+      ));
+      const pCol = Math.random() > 0.4 ? 0xff4400 : (Math.random() > 0.5 ? 0xffcc00 : 0x444444);
+      spawnParticle(contrailPos, contrailVel, pCol, 0.45 + Math.random() * 0.3, 0.22);
+    }
+  }
+
+  // Camera: ride the missile POV, linger on impact, or fall back to the drone orbit
+  if (predatorCameraMissile) {
+    // Onboard missile POV: chase cam just behind/above the missile
+    const m = predatorCameraMissile;
+    camera.position.copy(m.mesh.position)
+      .addScaledVector(m.dir, -5.5)
+      .add(new THREE.Vector3(0, 1.2, 0));
+    const lookDir = m.mesh.position.clone().addScaledVector(m.dir, 12).sub(camera.position).normalize();
+    camera.rotation.order = 'YXZ';
+    camera.rotation.y = Math.atan2(-lookDir.x, -lookDir.z);
+    camera.rotation.x = Math.asin(THREE.MathUtils.clamp(lookDir.y, -1, 1));
+  } else if (predatorImpactHold > 0) {
+    // Hold on the impact site while the blast plays out
+    predatorImpactHold -= dt;
+    camera.position.copy(predatorImpactCamPos);
+    const lookDir = predatorImpactPoint.clone().sub(camera.position).normalize();
+    camera.rotation.order = 'YXZ';
+    camera.rotation.y = Math.atan2(-lookDir.x, -lookDir.z);
+    camera.rotation.x = Math.asin(THREE.MathUtils.clamp(lookDir.y, -1, 1));
+    if (predatorImpactHold <= 0) {
+      predatorImpactCamPos = null;
+      predatorImpactPoint = null;
+    }
+  } else {
+    const droneX = Math.cos(predatorOrbitAngle) * predatorOrbitRadius;
+    const droneZ = Math.sin(predatorOrbitAngle) * predatorOrbitRadius;
+    camera.position.set(droneX, predatorOrbitHeight, droneZ);
+    camera.rotation.order = 'YXZ';
+    camera.rotation.y = predatorYaw;
+    camera.rotation.x = predatorPitch;
+  }
+
+  // Screen shake
+  if (cameraShake > 0) {
+    cameraShake = Math.max(0, cameraShake - dt * 2.8);
+    camera.position.x += (Math.random() - 0.5) * cameraShake * 0.25;
+    camera.position.y += (Math.random() - 0.5) * cameraShake * 0.25;
+    camera.position.z += (Math.random() - 0.5) * cameraShake * 0.25;
+  }
+
+  // Laser designator lives on the drone; don't retarget while riding a missile
+  if (!predatorCameraMissile && predatorImpactHold <= 0) {
+    updatePredatorTarget();
+  }
+  updatePredatorHUD();
+}
+
+function updatePredatorHUD() {
+  if (!predatorActive) return;
+
+  const altEl = document.getElementById('predator-alt');
+  if (altEl) altEl.innerText = `ALT: ${Math.floor(camera.position.y * 100).toLocaleString()} FT`;
+
+  if (predatorTargetPoint) {
+    const rng = Math.round(camera.position.distanceTo(predatorTargetPoint) * 3.28);
+    const rngEl = document.getElementById('predator-rng');
+    if (rngEl) rngEl.innerText = `RNG: ${rng} FT`;
+  }
+
+  // Salvo reload bar
+  const fireInterval = predatorRapidFiring ? 0.16 : 0.38;
+  const reloadPct = Math.max(0, Math.min(100, Math.round((1 - Math.max(0, predatorFireCooldown) / fireInterval) * 100)));
+  const barEl = document.getElementById('predator-reload-bar');
+  if (barEl) barEl.style.width = reloadPct + '%';
+  const textEl = document.getElementById('predator-reload-text');
+  if (textEl) textEl.innerText = reloadPct >= 100 ? (predatorAutoFire ? 'AUTO-FIRING' : 'READY') : `LAUNCHING ${reloadPct}%`;
+
+  // Live goat targeting brackets
+  const tgtContainer = document.getElementById('predator-targets');
+  if (!tgtContainer) return;
+  tgtContainer.innerHTML = '';
+
+  const wWidth = window.innerWidth;
+  const wHeight = window.innerHeight;
+  const centerVec = new THREE.Vector2(wWidth / 2, wHeight / 2);
+  const tempVec = new THREE.Vector3();
+
+  let closestDistToCenter = 9999;
+  let closestBox = null;
+  let closestGoatObj = null;
+
+  goats.forEach((goat, idx) => {
+    if (goat.dead) return;
+    tempVec.copy(goat.pos).add(new THREE.Vector3(0, 0.7, 0));
+    const distToCam = Math.round(camera.position.distanceTo(goat.pos) * 3.28);
+    tempVec.project(camera);
+
+    if (tempVec.z > -1 && tempVec.z < 1) {
+      const sx = (tempVec.x * 0.5 + 0.5) * wWidth;
+      const sy = (-(tempVec.y * 0.5) + 0.5) * wHeight;
+
+      if (sx > 20 && sx < wWidth - 20 && sy > 20 && sy < wHeight - 20) {
+        const box = document.createElement('div');
+        box.className = 'predator-target-box';
+        box.style.left = `${sx}px`;
+        box.style.top = `${sy}px`;
+        box.innerHTML = `
+          <div class="bracket top-left"></div>
+          <div class="bracket top-right"></div>
+          <div class="bracket bottom-left"></div>
+          <div class="bracket bottom-right"></div>
+          <div class="tgt-info">GOAT-${idx + 1} [${distToCam} FT]</div>
+        `;
+        tgtContainer.appendChild(box);
+
+        const screenDist = centerVec.distanceTo(new THREE.Vector2(sx, sy));
+        if (screenDist < closestDistToCenter) {
+          closestDistToCenter = screenDist;
+          closestBox = box;
+          closestGoatIdx = idx + 1;
+          closestGoatObj = goat;
+        }
+      }
+    }
+  });
+
+  const label = document.getElementById('predator-crosshair-label');
+  if (predatorCameraMissile) {
+    // Guidance status while riding the missile
+    const cm = predatorCameraMissile;
+    if (label) {
+      if (cm.manualTimer > 0) label.innerText = 'MANUAL GUIDANCE // MOUSE STEERING';
+      else if (cm.homeGoat && !cm.homeGoat.dead) label.innerText = 'GUIDED: HOMING ON LASER LOCK';
+      else label.innerText = 'GUIDED: BALLISTIC — MOUSE TO STEER';
+    }
+  } else if (closestBox && closestDistToCenter < 140) {
+    closestBox.classList.add('locked');
+    const info = closestBox.querySelector('.tgt-info');
+    if (info) info.innerText = 'LOCK: ' + info.innerText;
+    if (label) label.innerText = `LASER LOCK: GOAT-${closestGoatIdx} // AUTO-TRACK`;
+    predatorLockedGoat = closestGoatObj;
+  } else {
+    predatorLockedGoat = null;
+    if (label) label.innerText = 'AGM-114 HELLFIRE // LASER TRACK';
+  }
+}
+
+// Hook up Predator HUD buttons
+setTimeout(() => {
+  const autoBtn = document.getElementById('predator-autofire-btn');
+  if (autoBtn) autoBtn.addEventListener('click', (e) => { e.stopPropagation(); togglePredatorAutoFire(); });
+  const zoomBtn = document.getElementById('predator-zoom-btn');
+  if (zoomBtn) zoomBtn.addEventListener('click', (e) => { e.stopPropagation(); togglePredatorZoom(); });
+  const flirBtn = document.getElementById('predator-flir-btn');
+  if (flirBtn) flirBtn.addEventListener('click', (e) => { e.stopPropagation(); togglePredatorPalette(); });
+  const exitBtn = document.getElementById('predator-exit-btn');
+  if (exitBtn) exitBtn.addEventListener('click', (e) => { e.stopPropagation(); exitPredatorMode(true); });
 }, 100);
 
 // --- NPC GOATS ---
@@ -2439,7 +3303,7 @@ function animate() {
       playerInvulnTimer -= dt;
     }
 
-    if (!ac130Active) {
+    if (!ac130Active && !predatorActive) {
       // Controls
       const speed = keys['ShiftLeft'] || keys['ShiftRight'] ? 4.5 : 7.0;
       const moveDir = new THREE.Vector3();
@@ -2497,8 +3361,10 @@ function animate() {
         player.pos.set(0, 15, 0);
         player.vel.set(0, 0, 0);
       }
-    } else {
+    } else if (ac130Active) {
       updateAC130(dt);
+    } else if (predatorActive) {
+      updatePredatorDrone(dt);
     }
 
     updateGoats(dt);
@@ -2526,7 +3392,7 @@ function animate() {
     }
   }
 
-  if (!ac130Active) {
+  if (!ac130Active && !predatorActive) {
     // Camera update
     camera.position.set(player.pos.x, player.pos.y, player.pos.z);
     camera.rotation.order = 'YXZ';
@@ -2538,9 +3404,12 @@ function animate() {
     // Position UI
     document.getElementById('pos-info').innerText = 
       `X: ${Math.floor(player.pos.x)}, Y: ${Math.floor(player.pos.y)}, Z: ${Math.floor(player.pos.z)}`;
-  } else {
+  } else if (ac130Active) {
     document.getElementById('pos-info').innerText = 
       `AC-130 ALT: ${Math.floor(camera.position.y * 100)} FT`;
+  } else if (predatorActive) {
+    document.getElementById('pos-info').innerText = 
+      `PREDATOR ALT: ${Math.floor(camera.position.y * 100)} FT | MISSILES FIRED: ${predatorFiredCount}`;
   }
 
   renderer.render(scene, camera);

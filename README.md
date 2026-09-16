@@ -13,6 +13,12 @@ Pure AI slop, sorry.
 1. can you make this publishable on github pages please.
 1. i'm losing lives while i'm on the start screen, the goats are killing the player
 1. add a tool to the tool-belt to activate AC-130 mode
+1. add predator missiles mode to 7 on the tool belt
+
+Done:
+
+1. Disable auto fire on predator missiles
+2. Control direction of missiles with onboard camera (mouse-steered guided missiles + laser-lock homing, 30% slower)
 
 ---
 
